@@ -1,0 +1,79 @@
+---
+title: "Automatic tree matching"
+output: 
+  html_document:
+    df_print: paged
+vignette: >
+  %\VignetteIndexEntry{automatic_tree_matching}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, message=FALSE}
+library(itcfuns)
+library(tidyverse)
+```
+
+### Data frame with the plot center coordinates 
+
+```{r}
+plot_coords <- read_csv(system.file("extdata/plot_coords.csv", package = "itcfuns"))
+
+plot_coords
+```
+
+### Data frame with stem mapped trees in polar coordinates
+
+```{r}
+stem_mapped_polar <- read_csv(system.file("extdata/stem_mapped_polar.csv", package = "itcfuns"))
+
+stem_mapped_polar
+
+```
+
+Join plot center coordinates
+
+```{r}
+stem_mapped_polar <- inner_join(stem_mapped_polar, plot_coords, by = c("plotID" = "PlotID"))
+```
+
+### Convert to XY coordinates
+
+```{r}
+stem_mapped_XY <- stem_mapped_polar %>%
+  mutate(polar_to_XY(Azimuth, Distance, XPLOT, YPLOT, CrownOffsetAzimuth, CrownOffsetDistance))
+```
+
+### Trees detected for with ITC algorithm 
+
+```{r}
+detected_trees <- read_csv(system.file("extdata/detected_trees.csv", package = "itcfuns"))
+
+detected_trees
+```
+
+### Automatic tree matching
+
+```{r}
+# Clean mapped_trees data frame
+mapped_trees <- stem_mapped_XY %>%
+  select(!c(XPLOT, YPLOT, Azimuth:CrownOffsetDistance)) %>%
+  relocate(Z, SpeciesAbbrev, .after = Y)
+
+detected_trees
+
+nn_trees <- match_nn_trees(mapped_trees = mapped_trees, 
+                           detected_trees = detected_trees, 
+                           distance_type = "3D")
+
+nn_trees
+```
+
+
