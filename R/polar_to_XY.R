@@ -6,7 +6,8 @@
 #' @param ycenter - Cartesian Y coordinate of plot center
 #' @param azimuth_offset - Optional. If the tree is leaning and measurement was from plot center to the stem, azimuth between stem and tree top.
 #' @param distance_offset - Optional. If the tree is leaning and measurement was from plot center to the stem, distance between stem and tree top.
-#'
+#' @param shape_file - Optional
+#' @param crs - Optional.
 #' @export
 
 
@@ -16,9 +17,14 @@ polar_to_XY <- function(azimuth,
                       xcenter,
                       ycenter,
                       azimuth_offset,
-                      distance_offset) {
+                      distance_offset,
+                      shape_file,
+                      crs) {
   #angle = azimuth - 90
   #angle[angle<0] <- 360 + angle[angle<0]
+  if((max(azimuth) - min(azimuth) < 2*pi) == TRUE){
+    print("WARNING: This function assumes azimuth is in degrees, please check")
+  }
   angle = azimuth * pi/180
   #Convert to radians
   #angle = angle*pi/180
@@ -37,6 +43,18 @@ polar_to_XY <- function(azimuth,
     x_offset = 0
     y_offset = 0
   }
-
-  data.frame(X = x + x_offset, Y = y + y_offset)
+  
+  #define output point locations
+  tree_locations <- data.frame(X = x + x_offset, Y = y + y_offset)
+  
+  if(shape_file == T){# output a shapefile of the tree locations
+    print(paste("writing shapefile for tree locations. CRS is:", crs))
+    
+    tree_locations <- SpatialPointsDataFrame(coords = tree_locations[,c("X", 'Y')], data = 
+                                            tree_locations, proj4string = crs)
+  }
+  else{
+    tree_locations
+  }
+  return(tree_locations)
 }
