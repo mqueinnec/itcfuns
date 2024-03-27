@@ -48,7 +48,7 @@ stem_mapped_polar <- inner_join(stem_mapped_polar, plot_coords, by = c("plotID" 
 
 ```{r}
 stem_mapped_XY <- stem_mapped_polar %>%
-  mutate(polar_to_XY(Azimuth, Distance, XPLOT, YPLOT, CrownOffsetAzimuth, CrownOffsetDistance))
+  mutate(polar_to_XY(Azimuth, Distance, XPLOT, YPLOT, CrownOffsetAzimuth, CrownOffsetDistance, crs = 26910))
 ```
 
 ### Trees detected for with ITC algorithm 

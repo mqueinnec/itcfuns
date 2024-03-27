@@ -10,7 +10,12 @@
 #' @param crs - Optional.
 #' @export
 
-
+azimuth <- stem_mapped_polar$Azimuth
+distance <- stem_mapped_polar$Distance
+xcenter <- stem_mapped_polar$XPLOT
+ycenter <- stem_mapped_polar$YPLOT
+azimuth_offset <- stem_mapped_polar$CrownOffsetAzimuth
+distance_offset <- stem_mapped_polar$CrownOffsetDistance
 
 polar_to_XY <- function(azimuth,
                       distance,
@@ -18,7 +23,7 @@ polar_to_XY <- function(azimuth,
                       ycenter,
                       azimuth_offset,
                       distance_offset,
-                      shape_file,
+                      shape_file = TRUE,
                       crs) {
   #angle = azimuth - 90
   #angle[angle<0] <- 360 + angle[angle<0]
@@ -47,11 +52,11 @@ polar_to_XY <- function(azimuth,
   #define output point locations
   tree_locations <- data.frame(X = x + x_offset, Y = y + y_offset)
   
-  if(shape_file == T){# output a shapefile of the tree locations
-    print(paste("writing shapefile for tree locations. CRS is:", crs))
+  if(shape_file == T){# output a shape file of the tree locations
+    print(paste("creating spatial points layer from tree locations. CRS is:", crs))
     
-    tree_locations <- SpatialPointsDataFrame(coords = tree_locations[,c("X", 'Y')], data = 
-                                            tree_locations, proj4string = crs)
+    tree_locations <- sf::st_as_sf(tree_locations, coords = c("X", 'Y'), crs = crs)
+    
   }
   else{
     tree_locations
